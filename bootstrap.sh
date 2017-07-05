@@ -75,46 +75,48 @@ git clone https://github.com/MISP/MISP.git /var/www/MISP
 # chmod -R 700 $PATH_TO_MISP
 
 
+# If a valid SSL certificate is not already created for the server, create a self-signed certificate:
+sudo openssl req -newkey rsa:4096 -days 365 -nodes -x509 \
+    -subj "/C=<Country>/ST=<State>/L=<Locality>/O=<Organization>/OU=<Organizational Unit Name>/CN=<QDN.here>/emailAddress=admin@$FQDN" \
+        -keyout /etc/ssl/private/misp.local.key -out /etc/ssl/private/misp.local.crt
+
 
 echo -e "\n--- Add a VirtualHost for MISP ---\n"
-cat > /etc/apache2/sites-enabled/000-default.conf <<EOF
-<VirtualHost $FQDN:80>
-        ServerName $FQDN
+cat > /etc/apache2/sites-enabled/misp-ssl.conf <<EOF
+<VirtualHost *:443>
+        ServerAdmin me@me.local
+        ServerName misp.local
+        DocumentRoot$PATH_TO_MISP/app/webroot
 
-        Redirect permanent / https://$FQDN
-        
-        LogLevel warn
-        ErrorLog /var/log/apache2/misp.local_error.log
-        CustomLog /var/log/apache2/misp.local_access.log combined
-        ServerSignature Off
-</VirtualHost>
-        
-<VirtualHost $FQDN:443>
-        ServerAdmin admin@$FQDN
-        ServerName $FQDN
-        DocumentRoot $PATH_TO_MISP/app/webroot
         <Directory $PATH_TO_MISP/app/webroot>
             Options -Indexes
             AllowOverride all
-            Order allow,deny
-            allow from all
+            Require all granted
         </Directory>
-        
+s
         SSLEngine On
         SSLCertificateFile /etc/ssl/private/misp.local.crt
         SSLCertificateKeyFile /etc/ssl/private/misp.local.key
-        #SSLCertificateChainFile /etc/ssl/private/misp-chain.crt
+        SSLCertificateChainFile /etc/ssl/private/misp-chain.crt
         
         LogLevel warn
         ErrorLog /var/log/apache2/misp.local_error.log
         CustomLog /var/log/apache2/misp.local_access.log combined
         ServerSignature Off
-</VirtualHost>
+        </VirtualHost>
 EOF
+
+# activate new vhost
+a2dissite default-ssl
+a2ensite misp-ssl
+
+
+
+
+
 
 
 echo -e "\n--- Restarting Apache ---\n"
-service apache2 restart > /dev/null 2>&1
-
+systemctl restart apache2 > /dev/null 2>&1
 
 echo -e "\n--- MISP is ready! Point your Web browser to http://127.0.0.1:5000 ---\n"
