@@ -41,6 +41,9 @@ apt-get -qq update
 echo -e "\n--- Install base packages ---\n"
 apt-get -y install curl gcc git gnupg-agent make python openssl redis-server sudo vim zip > /dev/null 2>&1
 
+# To prevent a random error when cloning with Git: 'RPC failed; curl 56 GnuTLS recv error (-54): Error in the pull function.'
+git config --global http.postBuffer 1048576000
+git config --global https.postBuffer 1048576000
 
 echo -e "\n--- Installing and configuring Postfix ---\n"
 # # Postfix Configuration: Satellite system
@@ -53,11 +56,10 @@ apt-get install -y postfix > /dev/null 2>&1
 
 
 echo -e "\n--- Installing MariaDB specific packages and settings ---\n"
-
 apt-get install -y mariadb-client mariadb-server > /dev/null 2>&1
 # Secure the MariaDB installation (especially by setting a strong root password)
 sleep 7 # give some time to the DB to launch...
-apt-get install -y expect
+apt-get install -y expect > /dev/null 2>&1
 expect -f - <<-EOF
   set timeout 10
   spawn mysql_secure_installation
@@ -79,7 +81,7 @@ expect -f - <<-EOF
   send -- "y\r"
   expect eof
 EOF
-apt-get purge -y expect
+apt-get purge -y expect > /dev/null 2>&1
 
 
 echo -e "\n--- Installing Apache2 ---\n"
@@ -112,22 +114,22 @@ git config core.filemode false
 
 
 echo -e "\n--- Installing Mitre's STIX ---\n"
-apt-get install -y python-dev python-pip libxml2-dev libxslt1-dev zlib1g-dev python-setuptools
+apt-get install -y python-dev python-pip libxml2-dev libxslt1-dev zlib1g-dev python-setuptools > /dev/null 2>&1
 cd $PATH_TO_MISP/app/files/scripts
 git clone https://github.com/CybOXProject/python-cybox.git
 git clone https://github.com/STIXProject/python-stix.git
 cd $PATH_TO_MISP/app/files/scripts/python-cybox
 git checkout v2.1.0.12
-python setup.py install
+python setup.py install > /dev/null 2>&1
 cd $PATH_TO_MISP/app/files/scripts/python-stix
 git checkout v1.1.1.4
-python setup.py install
+python setup.py install > /dev/null 2>&1
 # install mixbox to accomodate the new STIX dependencies:
 cd $PATH_TO_MISP/app/files/scripts/
 git clone https://github.com/CybOXProject/mixbox.git
 cd $PATH_TO_MISP/app/files/scripts/mixbox
 git checkout v1.0.2
-python setup.py install
+python setup.py install > /dev/null 2>&1
 
 
 echo -e "\n--- Retrieving CakePHP... ---\n"
@@ -173,17 +175,6 @@ sudo openssl req -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=$OPENSSL_C/ST
 echo -e "\n--- Add a VirtualHost for MISP ---\n"
 cat > /etc/apache2/sites-available/misp-ssl.conf <<EOF
 <VirtualHost *:80>
-        ServerName misp.local
-
-        Redirect permanent / https://$FQDN
-
-        LogLevel warn
-        ErrorLog /var/log/apache2/misp.local_error.log
-        CustomLog /var/log/apache2/misp.local_access.log combined
-        ServerSignature Off
-</VirtualHost>
-
-<VirtualHost *:443>
         ServerAdmin me@me.local
         ServerName misp.local
         DocumentRoot $PATH_TO_MISP/app/webroot
@@ -194,17 +185,46 @@ cat > /etc/apache2/sites-available/misp-ssl.conf <<EOF
             Require all granted
         </Directory>
 
-        SSLEngine On
-        SSLCertificateFile /etc/ssl/private/misp.local.crt
-        SSLCertificateKeyFile /etc/ssl/private/misp.local.key
-        #SSLCertificateChainFile /etc/ssl/private/misp-chain.crt
-
         LogLevel warn
         ErrorLog /var/log/apache2/misp.local_error.log
         CustomLog /var/log/apache2/misp.local_access.log combined
         ServerSignature Off
-        </VirtualHost>
+</VirtualHost>
 EOF
+# cat > /etc/apache2/sites-available/misp-ssl.conf <<EOF
+# <VirtualHost *:80>
+#         ServerName misp.local
+#
+#         Redirect permanent / https://$FQDN
+#
+#         LogLevel warn
+#         ErrorLog /var/log/apache2/misp.local_error.log
+#         CustomLog /var/log/apache2/misp.local_access.log combined
+#         ServerSignature Off
+# </VirtualHost>
+#
+# <VirtualHost *:443>
+#         ServerAdmin me@me.local
+#         ServerName misp.local
+#         DocumentRoot $PATH_TO_MISP/app/webroot
+#
+#         <Directory $PATH_TO_MISP/app/webroot>
+#             Options -Indexes
+#             AllowOverride all
+#             Require all granted
+#         </Directory>
+#
+#         SSLEngine On
+#         SSLCertificateFile /etc/ssl/private/misp.local.crt
+#         SSLCertificateKeyFile /etc/ssl/private/misp.local.key
+#         #SSLCertificateChainFile /etc/ssl/private/misp-chain.crt
+#
+#         LogLevel warn
+#         ErrorLog /var/log/apache2/misp.local_error.log
+#         CustomLog /var/log/apache2/misp.local_access.log combined
+#         ServerSignature Off
+# </VirtualHost>
+# EOF
 # activate new vhost
 a2dissite default-ssl
 a2ensite misp-ssl
@@ -220,6 +240,10 @@ cp $PATH_TO_MISP/INSTALL/misp.logrotate /etc/logrotate.d/misp
 
 echo -e "\n--- MISP configuration ---\n"
 # There are 4 sample configuration files in /var/www/MISP/app/Config that need to be copied
+cp -a $PATH_TO_MISP/app/Config/bootstrap.default.php /var/www/MISP/app/Config/bootstrap.php
+cp -a $PATH_TO_MISP/app/Config/database.default.php /var/www/MISP/app/Config/database.php
+cp -a $PATH_TO_MISP/app/Config/core.default.php /var/www/MISP/app/Config/core.php
+cp -a $PATH_TO_MISP/app/Config/config.default.php /var/www/MISP/app/Config/config.php
 cat > $PATH_TO_MISP/app/Config/database.php <<EOF
 <?php
 class DATABASE_CONFIG {
@@ -244,7 +268,7 @@ chmod -R 750 $PATH_TO_MISP/app/Config
 
 
 echo -e "\n--- Generating a GPG encryption key... ---\n"
-apt-get install rng-tools
+apt-get install rng-tools haveged
 mkdir $PATH_TO_MISP/.gnupg
 chmod 700 $PATH_TO_MISP/.gnupg
 cat >gen-key-script <<EOF
@@ -271,32 +295,32 @@ gpg --homedir $PATH_TO_MISP/.gnupg --export --armor $EMAIL_ADDRESS > $PATH_TO_MI
 # !!! TODO
 
 
-echo -e "\n--- Enabling MISP new pub/sub feature (ZeroMQ)... ---\n"
-# ZeroMQ depends on the Python client for Redis
-pip install redis > /dev/null 2>&1
-## Install ZeroMQ and prerequisites
-apt-get install -y pkg-config > /dev/null 2>&1
-cd /usr/local/src/
-git clone git://github.com/jedisct1/libsodium.git > /dev/null 2>&1
-cd libsodium
-/autogen.sh > /dev/null 2>&1
-./configure > /dev/null 2>&1
-make check > /dev/null 2>&1
-make > /dev/null 2>&1
-make install > /dev/null 2>&1
-ldconfig > /dev/null 2>&1
-cd /usr/local/src/
-wget https://archive.org/download/zeromq_4.1.5/zeromq-4.1.5.tar.gz > /dev/null 2>&1
-tar -xvf zeromq-4.1.5.tar.gz > /dev/null 2>&1
-cd zeromq-4.1.5/
-./autogen.sh > /dev/null 2>&1
-./configure > /dev/null 2>&1
-make check > /dev/null 2>&1
-make > /dev/null 2>&1
-make install > /dev/null 2>&1
-ldconfig > /dev/null 2>&1
-## install pyzmq
-pip install pyzmq > /dev/null 2>&1
+# echo -e "\n--- Enabling MISP new pub/sub feature (ZeroMQ)... ---\n"
+# # ZeroMQ depends on the Python client for Redis
+# pip install redis > /dev/null 2>&1
+# ## Install ZeroMQ and prerequisites
+# apt-get install -y pkg-config > /dev/null 2>&1
+# cd /usr/local/src/
+# git clone git://github.com/jedisct1/libsodium.git > /dev/null 2>&1
+# cd libsodium
+# /autogen.sh > /dev/null 2>&1
+# ./configure > /dev/null 2>&1
+# make check > /dev/null 2>&1
+# make > /dev/null 2>&1
+# make install > /dev/null 2>&1
+# ldconfig > /dev/null 2>&1
+# cd /usr/local/src/
+# wget https://archive.org/download/zeromq_4.1.5/zeromq-4.1.5.tar.gz > /dev/null 2>&1
+# tar -xvf zeromq-4.1.5.tar.gz > /dev/null 2>&1
+# cd zeromq-4.1.5/
+# ./autogen.sh > /dev/null 2>&1
+# ./configure > /dev/null 2>&1
+# make check > /dev/null 2>&1
+# make > /dev/null 2>&1
+# make install > /dev/null 2>&1
+# ldconfig > /dev/null 2>&1
+# ## install pyzmq
+# pip install pyzmq > /dev/null 2>&1
 
 
 echo -e "\n--- Restarting Apache ---\n"

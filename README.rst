@@ -5,10 +5,13 @@ This script is a work in progress! Almost working :-)
 
 TODO:
 
-* check the GPG key generation and the generation of the SSL certificate;
+* check the generation of the SSL certificate;
 * check the configuration of postfix;
 * configure redis connection;
-* make the background workers start on boot;
+* make the background workers start on boot.
+
+Improvements:
+
 * provide more options through variables (for the gpg keys, etc.).
 
 
