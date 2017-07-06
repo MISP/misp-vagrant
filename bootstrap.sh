@@ -25,6 +25,7 @@ OPENSSL_EMAILADDRESS='info@circl.lu'
 # GPG configuration
 GPG_REAL_NAME='Cedric'
 GPG_EMAIL_ADDRESS='info@circl.lu'
+GPG_KEY_LENGTH='2048'
 GPG_PASSPHRASE=''
 
 
@@ -154,12 +155,12 @@ chmod -R g+ws $PATH_TO_MISP/app/files/scripts/tmp
 
 
 echo -e "\n--- Creating a database user... ---\n"
-mysql -u root -p$DBPASSWORD_AMIN -e "create database $DBNAME;"
-mysql -u root -p$DBPASSWORD_AMIN -e "grant usage on *.* to $DBNAME@localhost identified by '$DBPASSWORD_MISP';"
-mysql -u root -p$DBPASSWORD_AMIN -e "grant all privileges on $DBNAME.* to '$DBUSER_MISP'@'localhost';"
-mysql -u root -p$DBPASSWORD_AMIN -e "flush privileges;"
+mysql -u $DBUSER_AMIN -p$DBPASSWORD_AMIN -e "create database $DBNAME;"
+mysql -u $DBUSER_AMIN -p$DBPASSWORD_AMIN -e "grant usage on *.* to $DBNAME@localhost identified by '$DBPASSWORD_MISP';"
+mysql -u $DBUSER_AMIN -p$DBPASSWORD_AMIN -e "grant all privileges on $DBNAME.* to '$DBUSER_MISP'@'localhost';"
+mysql -u $DBUSER_AMIN -p$DBPASSWORD_AMIN -e "flush privileges;"
 # Import the empty MISP database from MYSQL.sql
-mysql -u misp -p$DBPASSWORD_MISP $DBNAME < /var/www/MISP/INSTALL/MYSQL.sql
+mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP $DBNAME < /var/www/MISP/INSTALL/MYSQL.sql
 
 
 echo -e "\n--- Configuring Apache... ---\n"
@@ -204,7 +205,6 @@ cat > /etc/apache2/sites-available/misp-ssl.conf <<EOF
         ServerSignature Off
         </VirtualHost>
 EOF
-
 # activate new vhost
 a2dissite default-ssl
 a2ensite misp-ssl
@@ -216,7 +216,6 @@ systemctl restart apache2 > /dev/null 2>&1
 
 echo -e "\n--- Configuring log rotation ---\n"
 cp $PATH_TO_MISP/INSTALL/misp.logrotate /etc/logrotate.d/misp
-
 
 
 echo -e "\n--- MISP configuration ---\n"
@@ -239,7 +238,6 @@ class DATABASE_CONFIG {
         );
 }
 EOF
-
 # and make sure the file permissions are still OK
 chown -R www-data:www-data $PATH_TO_MISP/app/Config
 chmod -R 750 $PATH_TO_MISP/app/Config
@@ -251,14 +249,14 @@ chmod 700 $PATH_TO_MISP/.gnupg
 cat >gen-key-script <<EOF
     %echo Generating a default key
     Key-Type: default
-    Key-Length: 1024
+    Key-Length: $GPG_KEY_LENGTH
     Subkey-Type: default
     Name-Real: $GPG_REAL_NAME
-    Name-Comment: with stupid passphrase
+    Name-Comment: no comment
     Name-Email: $GPG_EMAIL_ADDRESS
     Expire-Date: 0
     Passphrase: '$GPG_PASSPHRASE'
-    # Do a commit here, so that we can later print "done" :-)
+    # Do a commit here, so that we can later print "done"
     %commit
     %echo done
 EOF
@@ -270,9 +268,6 @@ gpg --homedir $PATH_TO_MISP/.gnupg --export --armor $EMAIL_ADDRESS > $PATH_TO_MI
 
 # To make the background workers start on boot
 # !!! TODO
-
-
-
 
 
 echo -e "\n--- MISP is ready! ---\n"
