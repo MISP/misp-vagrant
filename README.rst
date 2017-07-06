@@ -5,6 +5,7 @@ This script is a work in progress! Almost working :-)
 
 TODO:
 
+* automatically update the galaxies via the API;
 * check the generation of the SSL certificate;
 * check the configuration of postfix;
 * configure redis connection;
