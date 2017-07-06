@@ -270,6 +270,9 @@ gpg --homedir $PATH_TO_MISP/.gnupg --export --armor $EMAIL_ADDRESS > $PATH_TO_MI
 # To make the background workers start on boot
 # !!! TODO
 
+echo -e "\n--- Restarting Apache ---\n"
+systemctl restart apache2 > /dev/null 2>&1
+
 
 echo -e "\n--- MISP is ready! ---\n"
 echo -e "\n--- Point your Web browser to http://127.0.0.1:5000 ---\n"
