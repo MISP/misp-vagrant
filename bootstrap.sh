@@ -270,6 +270,35 @@ gpg --homedir $PATH_TO_MISP/.gnupg --export --armor $EMAIL_ADDRESS > $PATH_TO_MI
 # To make the background workers start on boot
 # !!! TODO
 
+
+echo -e "\n--- Enabling MISP new pub/sub feature (ZeroMQ)... ---\n"
+# ZeroMQ depends on the Python client for Redis
+pip install redis > /dev/null 2>&1
+## Install ZeroMQ and prerequisites
+apt-get install -y pkg-config > /dev/null 2>&1
+cd /usr/local/src/
+git clone git://github.com/jedisct1/libsodium.git > /dev/null 2>&1
+cd libsodium
+/autogen.sh > /dev/null 2>&1
+./configure > /dev/null 2>&1
+make check > /dev/null 2>&1
+make > /dev/null 2>&1
+make install > /dev/null 2>&1
+ldconfig > /dev/null 2>&1
+cd /usr/local/src/
+wget https://archive.org/download/zeromq_4.1.5/zeromq-4.1.5.tar.gz > /dev/null 2>&1
+tar -xvf zeromq-4.1.5.tar.gz > /dev/null 2>&1
+cd zeromq-4.1.5/
+./autogen.sh > /dev/null 2>&1
+./configure > /dev/null 2>&1
+make check > /dev/null 2>&1
+make > /dev/null 2>&1
+make install > /dev/null 2>&1
+ldconfig > /dev/null 2>&1
+## install pyzmq
+pip install pyzmq > /dev/null 2>&1
+
+
 echo -e "\n--- Restarting Apache ---\n"
 systemctl restart apache2 > /dev/null 2>&1
 

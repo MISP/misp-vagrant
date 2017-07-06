@@ -7,8 +7,8 @@ TODO:
 
 * check the GPG key generation and the generation of the SSL certificate;
 * check the configuration of postfix;
+* configure redis connection;
 * make the background workers start on boot;
-* apache.24.misp.ssl seems to be missing;
 * provide more options through variables (for the gpg keys, etc.).
 
 
