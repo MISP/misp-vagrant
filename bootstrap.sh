@@ -1,104 +1,203 @@
 #! /usr/bin/env bash
 
-# Variables
-APPENV='local'
-
+# Database configuration
 DBHOST='localhost'
 DBNAME='misp'
 DBUSER_AMIN='root'
-DBPASSWORD_AMIN='root'
+DBPASSWORD_AMIN='aStrongRo0TPaSSWorD'
 DBUSER_MISP='misp'
 DBPASSWORD_MISP='XXXXdbpasswordhereXXXXX'
 
+# Webserver configuration
 PATH_TO_MISP='/var/www/MISP'
 IP='127.0.0.1'
 FQDN='localhost'
 
+# OpenSSL configuration
+OPENSSL_C='Luxembourg'
+OPENSSL_ST='Luxembourg'
+OPENSSL_L='Luxembourg'
+OPENSSL_O='SMILE'
+OPENSSL_OU='CIRCL'
+OPENSSL_CN='circl.lu'
+OPENSSL_EMAILADDRESS='info@circl.lu'
+
+# GPG configuration
+GPG_REAL_NAME='Cedric'
+GPG_EMAIL_ADDRESS='info@circl.lu'
+GPG_PASSPHRASE=''
 
 
-echo -e "\n--- Installing now... ---\n"
+
+
+echo -e "\n--- Installing MISP... ---\n"
+
 
 echo -e "\n--- Updating packages list ---\n"
 apt-get -qq update
 
-echo -e "\n--- Install base packages ---\n"
-apt-get -y install vim git > /dev/null 2>&1
 
-echo -e "\n--- Install Postfix ---\n"
-# sudo apt-get install postfix
+echo -e "\n--- Install base packages ---\n"
+apt-get -y install curl gcc git gnupg-agent make python openssl redis-server sudo vim zip > /dev/null 2>&1
+
+
+echo -e "\n--- Installing and configuring Postfix ---\n"
 # # Postfix Configuration: Satellite system
 # # change the relay server later with:
 # sudo postconf -e 'relayhost = example.com'
 # sudo postfix reload
+echo "postfix postfix/mailname string `hostname`.ourdomain.org" | debconf-set-selections
+echo "postfix postfix/main_mailer_type string 'Satellite system'" | debconf-set-selections
+apt-get install -y postfix > /dev/null 2>&1
 
-echo -e "\n--- Updating packages list ---\n"
-apt-get -qq update
 
-#
-# TODO: replace MySQL by MariaDB
-#
+echo -e "\n--- Installing MariaDB specific packages and settings ---\n"
 
-echo -e "\n--- Install MySQL specific packages and settings ---\n"
-echo "mysql-server mysql-server/root_password password $DBPASSWORD_AMIN" | debconf-set-selections
-echo "mysql-server mysql-server/root_password_again password $DBPASSWORD_AMIN" | debconf-set-selections
-# echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
-# echo "phpmyadmin phpmyadmin/app-password-confirm password $DBPASSWORD_AMIN" | debconf-set-selections
-# echo "phpmyadmin phpmyadmin/mysql/admin-pass password $DBPASSWORD_AMIN" | debconf-set-selections
-# echo "phpmyadmin phpmyadmin/mysql/app-pass password $DBPASSWORD_AMIN" | debconf-set-selections
-# echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect none" | debconf-set-selections
-apt-get -y install mysql-server phpmyadmin > /dev/null 2>&1
+apt-get install -y mariadb-client mariadb-server > /dev/null 2>&1
+# Secure the MariaDB installation (especially by setting a strong root password)
+sleep 7 # give some time to the DB to launch...
+apt-get install -y expect
+expect -f - <<-EOF
+  set timeout 10
+  spawn mysql_secure_installation
+  expect "Enter current password for root (enter for none):"
+  send -- "\r"
+  expect "Set root password?"
+  send -- "y\r"
+  expect "New password:"
+  send -- "${DBPASSWORD_AMIN}\r"
+  expect "Re-enter new password:"
+  send -- "${DBPASSWORD_AMIN}\r"
+  expect "Remove anonymous users?"
+  send -- "y\r"
+  expect "Disallow root login remotely?"
+  send -- "y\r"
+  expect "Remove test database and access to it?"
+  send -- "y\r"
+  expect "Reload privilege tables now?"
+  send -- "y\r"
+  expect eof
+EOF
+apt-get purge -y expect
+
+
+echo -e "\n--- Installing Apache2 ---\n"
+apt-get install -y apache2 apache2-doc apache2-utils > /dev/null 2>&1
+a2dismod status > /dev/null 2>&1
+a2enmod ssl > /dev/null 2>&1
+a2enmod rewrite > /dev/null 2>&1
+a2dissite 000-default > /dev/null 2>&1
+a2ensite default-ssl > /dev/null 2>&1
+
 
 echo -e "\n--- Installing PHP-specific packages ---\n"
-apt-get -y install php apache2 libapache2-mod-php php-curl php-gd php-mcrypt php-mysql php-pear php-apcu php-xml php-mbstring php-intl php-imagick > /dev/null 2>&1
-
-echo -e "\n--- Enabling mod-rewrite and ssl ---\n"
-a2enmod rewrite > /dev/null 2>&1
-a2enmod ssl > /dev/null 2>&1
-
-echo -e "\n--- Allowing Apache override to all ---\n"
-sudo sed -i "s/AllowOverride None/AllowOverride All/g" /etc/apache2/apache2.conf
-
-#echo -e "\n--- We want to see the PHP errors, turning them on ---\n"
-#sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php/7.0/apache2/php.ini
-#sed -i "s/display_errors = .*/display_errors = On/" /etc/php/7.0/apache2/php.ini
-
-echo -e "\n--- Setting up our MySQL user for MISP ---\n"
-mysql -u root -p$DBPASSWORD_AMIN -e "CREATE USER '$DBUSER_MISP'@'localhost' IDENTIFIED BY '$DBPASSWORD_MISP';"
-mysql -u root -p$DBPASSWORD_AMIN -e "GRANT ALL PRIVILEGES ON * . * TO '$DBUSER_MISP'@'localhost';"
-mysql -u root -p$DBPASSWORD_AMIN -e "FLUSH PRIVILEGES;"
+apt-get install -y libapache2-mod-php php php-cli php-crypt-gpg php-dev php-json php-mysql php-opcache php-readline php-redis php-xml > /dev/null 2>&1
 
 
+echo -e "\n--- Restarting Apache ---\n"
+systemctl restart apache2 > /dev/null 2>&1
+
+
+echo -e "\n--- Retrieving MISP ---\n"
 mkdir $PATH_TO_MISP
-git clone https://github.com/MISP/MISP.git /var/www/MISP
+chown www-data:www-data $PATH_TO_MISP
+cd $PATH_TO_MISP
+git clone https://github.com/MISP/MISP.git $PATH_TO_MISP
+git checkout tags/$(git describe --tags `git rev-list --tags --max-count=1`)
+git config core.filemode false
 # chown -R www-data $PATH_TO_MISP
 # chgrp -R www-data $PATH_TO_MISP
 # chmod -R 700 $PATH_TO_MISP
 
 
+echo -e "\n--- Installing Mitre's STIX ---\n"
+apt-get install -y python-dev python-pip libxml2-dev libxslt1-dev zlib1g-dev python-setuptools
+cd $PATH_TO_MISP/app/files/scripts
+git clone https://github.com/CybOXProject/python-cybox.git
+git clone https://github.com/STIXProject/python-stix.git
+cd $PATH_TO_MISP/app/files/scripts/python-cybox
+git checkout v2.1.0.12
+python setup.py install
+cd $PATH_TO_MISP/app/files/scripts/python-stix
+git checkout v1.1.1.4
+python setup.py install
+# install mixbox to accomodate the new STIX dependencies:
+cd $PATH_TO_MISP/app/files/scripts/
+git clone https://github.com/CybOXProject/mixbox.git
+cd $PATH_TO_MISP/app/files/scripts/mixbox
+git checkout v1.0.2
+python setup.py install
+
+
+echo -e "\n--- Retrieving CakePHP... ---\n"
+# CakePHP is included as a submodule of MISP, execute the following commands to let git fetch it:
+cd $PATH_TO_MISP
+git submodule init
+git submodule update
+# Once done, install CakeResque along with its dependencies if you intend to use the built in background jobs:
+cd $PATH_TO_MISP/app
+php composer.phar require kamisama/cake-resque:4.1.2
+php composer.phar config vendor-dir Vendor
+php composer.phar install
+# Enable CakeResque with php-redis
+phpenmod redis
+# To use the scheduler worker for scheduled tasks, do the following:
+cp -fa $PATH_TO_MISP/INSTALL/setup/config.php $PATH_TO_MISP/app/Plugin/CakeResque/Config/config.php
+
+
+echo -e "\n--- Setting the permissions... ---\n"
+chown -R www-data:www-data $PATH_TO_MISP
+chmod -R 750 $PATH_TO_MISP
+chmod -R g+ws $PATH_TO_MISP/app/tmp
+chmod -R g+ws $PATH_TO_MISP/app/files
+chmod -R g+ws $PATH_TO_MISP/app/files/scripts/tmp
+
+
+echo -e "\n--- Creating a database user... ---\n"
+mysql -u root -p$DBPASSWORD_AMIN -e "create database $DBNAME;"
+mysql -u root -p$DBPASSWORD_AMIN -e "grant usage on *.* to $DBNAME@localhost identified by '$DBPASSWORD_MISP';"
+mysql -u root -p$DBPASSWORD_AMIN -e "grant all privileges on $DBNAME.* to '$DBUSER_MISP'@'localhost';"
+mysql -u root -p$DBPASSWORD_AMIN -e "flush privileges;"
+# Import the empty MISP database from MYSQL.sql
+mysql -u misp -p$DBPASSWORD_MISP $DBNAME < /var/www/MISP/INSTALL/MYSQL.sql
+
+
+echo -e "\n--- Configuring Apache... ---\n"
+# !!! apache.24.misp.ssl seems to be missing
+#cp $PATH_TO_MISP/INSTALL/apache.24.misp.ssl /etc/apache2/sites-available/misp-ssl.conf
 # If a valid SSL certificate is not already created for the server, create a self-signed certificate:
-sudo openssl req -newkey rsa:4096 -days 365 -nodes -x509 \
-    -subj "/C=<Country>/ST=<State>/L=<Locality>/O=<Organization>/OU=<Organizational Unit Name>/CN=<QDN.here>/emailAddress=admin@$FQDN" \
-        -keyout /etc/ssl/private/misp.local.key -out /etc/ssl/private/misp.local.crt
+sudo openssl req -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=$OPENSSL_C/ST=$OPENSSL_ST/L=$OPENSSL_L/O=<$OPENSSL_O/OU=$OPENSSL_OU/CN=$OPENSSL_CN/emailAddress=$OPENSSL_EMAILADDRESS" -keyout /etc/ssl/private/misp.local.key -out /etc/ssl/private/misp.local.crt
 
 
 echo -e "\n--- Add a VirtualHost for MISP ---\n"
-cat > /etc/apache2/sites-enabled/misp-ssl.conf <<EOF
+cat > /etc/apache2/sites-available/misp-ssl.conf <<EOF
+<VirtualHost *:80>
+        ServerName misp.local
+
+        Redirect permanent / https://$FQDN
+
+        LogLevel warn
+        ErrorLog /var/log/apache2/misp.local_error.log
+        CustomLog /var/log/apache2/misp.local_access.log combined
+        ServerSignature Off
+</VirtualHost>
+
 <VirtualHost *:443>
         ServerAdmin me@me.local
         ServerName misp.local
-        DocumentRoot$PATH_TO_MISP/app/webroot
+        DocumentRoot $PATH_TO_MISP/app/webroot
 
         <Directory $PATH_TO_MISP/app/webroot>
             Options -Indexes
             AllowOverride all
             Require all granted
         </Directory>
-s
+
         SSLEngine On
         SSLCertificateFile /etc/ssl/private/misp.local.crt
         SSLCertificateKeyFile /etc/ssl/private/misp.local.key
-        SSLCertificateChainFile /etc/ssl/private/misp-chain.crt
-        
+        #SSLCertificateChainFile /etc/ssl/private/misp-chain.crt
+
         LogLevel warn
         ErrorLog /var/log/apache2/misp.local_error.log
         CustomLog /var/log/apache2/misp.local_access.log combined
@@ -111,12 +210,71 @@ a2dissite default-ssl
 a2ensite misp-ssl
 
 
-
-
-
-
-
 echo -e "\n--- Restarting Apache ---\n"
 systemctl restart apache2 > /dev/null 2>&1
 
-echo -e "\n--- MISP is ready! Point your Web browser to http://127.0.0.1:5000 ---\n"
+
+echo -e "\n--- Configuring log rotation ---\n"
+cp $PATH_TO_MISP/INSTALL/misp.logrotate /etc/logrotate.d/misp
+
+
+
+echo -e "\n--- MISP configuration ---\n"
+# There are 4 sample configuration files in /var/www/MISP/app/Config that need to be copied
+cat > $PATH_TO_MISP/app/Config/database.php <<EOF
+<?php
+class DATABASE_CONFIG {
+        public \$default = array(
+                'datasource' => 'Database/Mysql',
+                //'datasource' => 'Database/Postgres',
+                'persistent' => false,
+                'host' => '$DBHOST',
+                'login' => '$DBUSER_MISP',
+                'port' => 3306, // MySQL & MariaDB
+                //'port' => 5432, // PostgreSQL
+                'password' => '$DBPASSWORD_MISP',
+                'database' => '$DBNAME',
+                'prefix' => '',
+                'encoding' => 'utf8',
+        );
+}
+EOF
+
+# and make sure the file permissions are still OK
+chown -R www-data:www-data $PATH_TO_MISP/app/Config
+chmod -R 750 $PATH_TO_MISP/app/Config
+
+
+echo -e "\n--- Generating a GPG encryption key... ---\n"
+mkdir $PATH_TO_MISP/.gnupg
+chmod 700 $PATH_TO_MISP/.gnupg
+cat >gen-key-script <<EOF
+    %echo Generating a default key
+    Key-Type: default
+    Key-Length: 1024
+    Subkey-Type: default
+    Name-Real: $GPG_REAL_NAME
+    Name-Comment: with stupid passphrase
+    Name-Email: $GPG_EMAIL_ADDRESS
+    Expire-Date: 0
+    Passphrase: '$GPG_PASSPHRASE'
+    # Do a commit here, so that we can later print "done" :-)
+    %commit
+    %echo done
+EOF
+gpg --homedir $PATH_TO_MISP/.gnupg --batch --gen-key gen-key-script
+rm gen-key-script
+# And export the public key to the webroot
+gpg --homedir $PATH_TO_MISP/.gnupg --export --armor $EMAIL_ADDRESS > $PATH_TO_MISP/app/webroot/gpg.asc
+
+
+# To make the background workers start on boot
+# !!! TODO
+
+
+
+
+
+echo -e "\n--- MISP is ready! ---\n"
+echo -e "\n--- Point your Web browser to http://127.0.0.1:5000 ---\n"
+echo -e "\n--- Default user/pass = admin@admin.test/admin ---\n"

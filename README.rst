@@ -1,7 +1,17 @@
 Deployment of the MISP with Vagrant
 ===================================
 
-This script is a work in progress!
+This script is a work in progress! Almost working :-)
+
+TODO:
+
+* check the GPG key generation;
+* check the generation of the SSL certificate;
+* make the background workers start on boot;
+* apache.24.misp.ssl seems to be missing;
+* provide more options through variables (for the gpg keys, etc.).
+
+
 
 Installation of VirtualBox and Vagrant
 --------------------------------------
