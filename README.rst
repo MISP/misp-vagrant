@@ -1,5 +1,5 @@
-Deployment of the MISP with Vagrant
-===================================
+Deployment of MISP with Vagrant
+===============================
 
 This script is a work in progress!
 
