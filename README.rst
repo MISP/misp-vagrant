@@ -1,7 +1,7 @@
 Deployment of the MISP with Vagrant
 ===================================
 
-This script is a work in progress! Almost working :-)
+This script is a work in progress!
 
 TODO:
 
@@ -9,7 +9,8 @@ TODO:
 * check the generation of the SSL certificate;
 * check the configuration of postfix;
 * configure redis connection;
-* make the background workers start on boot.
+* make the background workers start on boot;
+* generate the TLS certificate with Let's Encrypt.
 
 Improvements:
 
