@@ -244,6 +244,7 @@ chmod -R 750 $PATH_TO_MISP/app/Config
 
 
 echo -e "\n--- Generating a GPG encryption key... ---\n"
+apt-get install rng-tools
 mkdir $PATH_TO_MISP/.gnupg
 chmod 700 $PATH_TO_MISP/.gnupg
 cat >gen-key-script <<EOF
