@@ -268,7 +268,7 @@ chmod -R 750 $PATH_TO_MISP/app/Config
 
 
 echo -e "\n--- Generating a GPG encryption key... ---\n"
-apt-get install rng-tools haveged
+apt-get install -y rng-tools haveged
 mkdir $PATH_TO_MISP/.gnupg
 chmod 700 $PATH_TO_MISP/.gnupg
 cat >gen-key-script <<EOF
@@ -291,8 +291,23 @@ rm gen-key-script
 gpg --homedir $PATH_TO_MISP/.gnupg --export --armor $EMAIL_ADDRESS > $PATH_TO_MISP/app/webroot/gpg.asc
 
 
-# To make the background workers start on boot
-# !!! TODO
+echo -e "\n--- Making the background workers start on boot... ---\n"
+chmod +x $PATH_TO_MISP/app/Console/worker/start.sh
+cat > /etc/systemd/system/workers.service  <<EOF
+[Unit]
+Description=Start the background workers at boot
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=www-data
+ExecStart=/bin/sh -c 'bash $PATH_TO_MISP/app/Console/worker/start.sh'
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable workers.service
+systemctl restart workers.service
 
 
 # echo -e "\n--- Enabling MISP new pub/sub feature (ZeroMQ)... ---\n"
