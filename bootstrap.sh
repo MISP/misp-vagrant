@@ -306,8 +306,13 @@ ExecStart=/bin/sh -c 'bash $PATH_TO_MISP/app/Console/worker/start.sh'
 [Install]
 WantedBy=multi-user.target
 EOF
-systemctl enable workers.service
-systemctl restart workers.service
+systemctl enable workers.service > /dev/null
+systemctl restart workers.service > /dev/null
+
+
+echo -e "\n--- Updating the galaxies... ---\n"
+AUTH_KEY=$(mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP misp -e "SELECT authkey FROM users;" |  tail -1)
+curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/galaxies/update > /dev/null
 
 
 # echo -e "\n--- Enabling MISP new pub/sub feature (ZeroMQ)... ---\n"

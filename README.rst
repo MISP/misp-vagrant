@@ -5,12 +5,10 @@ This script is a work in progress!
 
 TODO:
 
-* automatically update the galaxies via the API;
 * check the generation of the SSL certificate;
 * check the configuration of postfix;
 * configure redis connection;
 * generate the TLS certificate with Let's Encrypt.
-
 
 
 Installation of VirtualBox and Vagrant
