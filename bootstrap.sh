@@ -312,11 +312,11 @@ systemctl restart workers.service > /dev/null
 
 echo -e "\n--- Restarting Apache ---\n"
 systemctl restart apache2 > /dev/null 2>&1
-
+sleep 5
 
 echo -e "\n--- Updating the galaxies... ---\n"
-AUTH_KEY=$(mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP misp -e "SELECT authkey FROM users;" |  tail -1)
-curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/galaxies/update > /dev/null 2>&1
+AUTH_KEY=$(mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP misp -e "SELECT authkey FROM users;" | tail -1)
+curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/galaxies/update > /dev/null
 
 
 # echo -e "\n--- Enabling MISP new pub/sub feature (ZeroMQ)... ---\n"
