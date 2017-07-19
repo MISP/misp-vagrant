@@ -320,6 +320,10 @@ AUTH_KEY=$(mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP misp -e "SELECT authkey FROM
 curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/galaxies/update > /dev/null
 
 
+echo -e "\n--- Updating the taxonomies... ---\n"
+curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/taxonomies/update
+
+
 # echo -e "\n--- Enabling MISP new pub/sub feature (ZeroMQ)... ---\n"
 # # ZeroMQ depends on the Python client for Redis
 # pip install redis > /dev/null 2>&1
