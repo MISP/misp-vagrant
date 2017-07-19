@@ -1,13 +1,10 @@
 Deployment of MISP with Vagrant
 ===============================
 
-This script is a work in progress!
-
 TODO:
 
 * check the generation of the SSL certificate;
 * check the configuration of postfix;
-* configure redis connection;
 * generate the TLS certificate with Let's Encrypt.
 
 
