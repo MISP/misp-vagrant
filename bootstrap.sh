@@ -292,7 +292,7 @@ gpg --homedir $PATH_TO_MISP/.gnupg --export --armor $EMAIL_ADDRESS > $PATH_TO_MI
 
 
 echo -e "\n--- Making the background workers start on boot... ---\n"
-chmod +x $PATH_TO_MISP/app/Console/worker/start.sh
+chmod 755 $PATH_TO_MISP/app/Console/worker/start.sh
 cat > /etc/systemd/system/workers.service  <<EOF
 [Unit]
 Description=Start the background workers at boot
@@ -301,7 +301,7 @@ Description=Start the background workers at boot
 Type=oneshot
 RemainAfterExit=yes
 User=www-data
-ExecStart=/bin/sh -c 'bash $PATH_TO_MISP/app/Console/worker/start.sh'
+ExecStart=$PATH_TO_MISP/app/Console/worker/start.sh
 
 [Install]
 WantedBy=multi-user.target
