@@ -11,6 +11,7 @@ DBPASSWORD_MISP='XXXXdbpasswordhereXXXXX'
 # Webserver configuration
 PATH_TO_MISP='/var/www/MISP'
 MISP_BASEURL='http://127.0.0.1:5000'
+MISP_LIVE='1'
 FQDN='localhost'
 
 # OpenSSL configuration
@@ -265,8 +266,9 @@ EOF
 # and make sure the file permissions are still OK
 chown -R www-data:www-data $PATH_TO_MISP/app/Config
 chmod -R 750 $PATH_TO_MISP/app/Config
-# Set MISP.baseurl
+# Set some MISP directives with the command line tool
 $PATH_TO_MISP/app/Console/cake Baseurl $MISP_BASEURL
+$PATH_TO_MISP/app/Console/cake Live $MISP_LIVE
 
 
 echo -e "\n--- Generating a GPG encryption key... ---\n"
