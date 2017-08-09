@@ -23,9 +23,3 @@ MISP will be automatically deployed in an Ubuntu Zesty Server.
 
 Once the VM will be configured by Vagrant, go to the address
 http://127.0.0.1:5000.
-
-
-TODO:
-
-* check the generation of the SSL certificate;
-* generate the TLS certificate with Let's Encrypt.
