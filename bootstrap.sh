@@ -10,7 +10,6 @@ DBPASSWORD_MISP='XXXXdbpasswordhereXXXXX'
 
 # Webserver configuration
 PATH_TO_MISP='/var/www/MISP'
-IP='127.0.0.1'
 MISP_BASEURL='http://127.0.0.1:5000'
 FQDN='localhost'
 
