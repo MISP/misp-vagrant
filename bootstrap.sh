@@ -106,7 +106,7 @@ mkdir $PATH_TO_MISP
 chown www-data:www-data $PATH_TO_MISP
 cd $PATH_TO_MISP
 git clone https://github.com/MISP/MISP.git $PATH_TO_MISP
-git checkout tags/$(git describe --tags `git rev-list --tags --max-count=1`)
+#git checkout tags/$(git describe --tags `git rev-list --tags --max-count=1`)
 git config core.filemode false
 # chown -R www-data $PATH_TO_MISP
 # chgrp -R www-data $PATH_TO_MISP
