@@ -356,6 +356,6 @@ curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v ht
 # pip install pyzmq > /dev/null 2>&1
 
 
-echo -e "\n--- MISP is ready! ---\n"
-echo -e "\n--- Point your Web browser to http://127.0.0.1:5000 ---\n"
-echo -e "\n--- Default user/pass = admin@admin.test/admin ---\n"
+echo -e "\e[32mMISP is ready\e[0m"
+echo -e "Point your Web browser to \e[33m$MISP_BASEURL\e[0m"
+echo -e "Default user/pass = \e[33madmin@admin.test/admin\e[0m"
