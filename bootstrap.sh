@@ -3,8 +3,8 @@
 # Database configuration
 DBHOST='localhost'
 DBNAME='misp'
-DBUSER_AMIN='root'
-DBPASSWORD_AMIN='aStrongRo0TPaSSWorD'
+DBUSER_ADMIN='root'
+DBPASSWORD_ADMIN='aStrongRo0TPaSSWorD'
 DBUSER_MISP='misp'
 DBPASSWORD_MISP='XXXXdbpasswordhereXXXXX'
 
@@ -69,9 +69,9 @@ expect -f - <<-EOF
   expect "Set root password?"
   send -- "y\r"
   expect "New password:"
-  send -- "${DBPASSWORD_AMIN}\r"
+  send -- "${DBPASSWORD_ADMIN}\r"
   expect "Re-enter new password:"
-  send -- "${DBPASSWORD_AMIN}\r"
+  send -- "${DBPASSWORD_ADMIN}\r"
   expect "Remove anonymous users?"
   send -- "y\r"
   expect "Disallow root login remotely?"
@@ -158,10 +158,10 @@ chmod -R g+ws $PATH_TO_MISP/app/files/scripts/tmp
 
 
 echo -e "\n--- Creating a database user... ---\n"
-mysql -u $DBUSER_AMIN -p$DBPASSWORD_AMIN -e "create database $DBNAME;"
-mysql -u $DBUSER_AMIN -p$DBPASSWORD_AMIN -e "grant usage on *.* to $DBNAME@localhost identified by '$DBPASSWORD_MISP';"
-mysql -u $DBUSER_AMIN -p$DBPASSWORD_AMIN -e "grant all privileges on $DBNAME.* to '$DBUSER_MISP'@'localhost';"
-mysql -u $DBUSER_AMIN -p$DBPASSWORD_AMIN -e "flush privileges;"
+mysql -u $DBUSER_ADMIN -p$DBPASSWORD_ADMIN -e "create database $DBNAME;"
+mysql -u $DBUSER_ADMIN -p$DBPASSWORD_ADMIN -e "grant usage on *.* to $DBNAME@localhost identified by '$DBPASSWORD_MISP';"
+mysql -u $DBUSER_ADMIN -p$DBPASSWORD_ADMIN -e "grant all privileges on $DBNAME.* to '$DBUSER_MISP'@'localhost';"
+mysql -u $DBUSER_ADMIN -p$DBPASSWORD_ADMIN -e "flush privileges;"
 # Import the empty MISP database from MYSQL.sql
 mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP $DBNAME < /var/www/MISP/INSTALL/MYSQL.sql
 
