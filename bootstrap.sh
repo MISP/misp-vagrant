@@ -320,11 +320,11 @@ sleep 5
 echo -e "\n--- Updating the galaxies... ---\n"
 sudo -E $PATH_TO_MISP/app/Console/cake userInit -q > /dev/null
 AUTH_KEY=$(mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP misp -e "SELECT authkey FROM users;" | tail -1)
-curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/galaxies/update > /dev/null 2>&1
+curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/json" -v http://127.0.0.1/galaxies/update > /dev/null 2>&1
 
 
 echo -e "\n--- Updating the taxonomies... ---\n"
-curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/taxonomies/update > /dev/null 2>&1
+curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/json" -v http://127.0.0.1/taxonomies/update > /dev/null 2>&1
 
 
 # echo -e "\n--- Enabling MISP new pub/sub feature (ZeroMQ)... ---\n"
