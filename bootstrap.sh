@@ -302,8 +302,7 @@ cat > /etc/systemd/system/workers.service  <<EOF
 Description=Start the background workers at boot
 
 [Service]
-Type=oneshot
-RemainAfterExit=yes
+Type=forking
 User=www-data
 ExecStart=$PATH_TO_MISP/app/Console/worker/start.sh
 
@@ -321,11 +320,11 @@ sleep 5
 echo -e "\n--- Updating the galaxies... ---\n"
 sudo -E $PATH_TO_MISP/app/Console/cake userInit -q > /dev/null
 AUTH_KEY=$(mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP misp -e "SELECT authkey FROM users;" | tail -1)
-curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/galaxies/update > /dev/null
+curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/galaxies/update > /dev/null 2>&1
 
 
 echo -e "\n--- Updating the taxonomies... ---\n"
-curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/taxonomies/update
+curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v http://127.0.0.1/taxonomies/update > /dev/null 2>&1
 
 
 # echo -e "\n--- Enabling MISP new pub/sub feature (ZeroMQ)... ---\n"
@@ -357,5 +356,5 @@ curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/xml" -v ht
 
 
 echo -e "\e[32mMISP is ready\e[0m"
-echo -e "Point your Web browser to \e[33m$MISP_BASEURL\e[0m"
-echo -e "Default user/pass = \e[33madmin@admin.test/admin\e[0m"
+echo -e "\e[0mPoint your Web browser to \e[33m$MISP_BASEURL\e[0m"
+echo -e "\e[0mDefault user/pass = \e[33madmin@admin.test/admin\e[0m"
