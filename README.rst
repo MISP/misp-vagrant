@@ -22,4 +22,11 @@ MISP will be automatically deployed in an Ubuntu Zesty Server.
     $ vagrant up
 
 Once the VM will be configured by Vagrant, go to the address
-http://127.0.0.1:5000.
+http://127.0.0.1:5000. Use the user/password: admin@admin.test/admin
+
+
+Modules activated by default in the VM:
+
+* `MISP galaxy <https://github.com/MISP/misp-galaxy>`_ (http://127.0.0.1:5000/taxonomies/index)
+* `MISP taxonomies <https://github.com/MISP/misp-taxonomies>`_ (http://127.0.0.1:5000/galaxies/index.json)
+* `MISP modules <https://github.com/MISP/misp-modules>`_ (curl -s http://127.0.0.1:6666/modules)
