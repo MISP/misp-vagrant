@@ -327,7 +327,7 @@ Description=Start the misp modules server at boot
 [Service]
 Type=forking
 User=www-data
-ExecStart=/bin/sh -c 'misp-modules -s &'
+ExecStart=/bin/sh -c 'misp-modules -l 0.0.0.0 -s &'
 
 [Install]
 WantedBy=multi-user.target
