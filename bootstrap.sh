@@ -4,9 +4,9 @@
 DBHOST='localhost'
 DBNAME='misp'
 DBUSER_ADMIN='root'
-DBPASSWORD_ADMIN='aStrongRo0TPaSSWorD'
+DBPASSWORD_ADMIN='$(openssl rand -hex 32)'
 DBUSER_MISP='misp'
-DBPASSWORD_MISP='XXXXdbpasswordhereXXXXX'
+DBPASSWORD_MISP='$(openssl rand -hex 32)'
 
 # Webserver configuration
 PATH_TO_MISP='/var/www/MISP'
