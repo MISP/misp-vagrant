@@ -4,9 +4,9 @@
 DBHOST='localhost'
 DBNAME='misp'
 DBUSER_ADMIN='root'
-DBPASSWORD_ADMIN='$(openssl rand -hex 32)'
+DBPASSWORD_ADMIN="$(openssl rand -hex 32)"
 DBUSER_MISP='misp'
-DBPASSWORD_MISP='$(openssl rand -hex 32)'
+DBPASSWORD_MISP="$(openssl rand -hex 32)"
 
 # Webserver configuration
 PATH_TO_MISP='/var/www/MISP'
@@ -313,7 +313,30 @@ systemctl enable workers.service > /dev/null
 systemctl restart workers.service > /dev/null
 
 
-echo -e "\n--- Restarting Apache ---\n"
+echo -e "\n--- Installing MISP modules... ---\n"
+apt-get install -y python3-dev python3-pip libpq5 libjpeg-dev > /dev/null 2>&1
+cd /usr/local/src/
+git clone https://github.com/MISP/misp-modules.git
+cd misp-modules
+pip3 install -I -r REQUIREMENTS > /dev/null 2>&1
+pip3 install -I . > /dev/null 2>&1
+cat > /etc/systemd/system/misp-modules.service  <<EOF
+[Unit]
+Description=Start the misp modules server at boot
+
+[Service]
+Type=forking
+User=www-data
+ExecStart=/bin/sh -c 'misp-modules -s &'
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable misp-modules.service > /dev/null
+systemctl restart misp-modules.service > /dev/null
+
+
+echo -e "\n--- Restarting Apache... ---\n"
 systemctl restart apache2 > /dev/null 2>&1
 sleep 5
 
