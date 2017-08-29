@@ -4,15 +4,18 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
+MISP_ENV = ENV['MISP_ENV'] || 'dev'
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # All Vagrant configuration is done here. The most common configuration
   # options are documented and commented below. For a complete reference,
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
+  #config.vm.box = "bento/ubuntu-16.04"
   config.vm.box = "ubuntu/zesty64"
   #config.vm.box_url = "https://atlas.hashicorp.com/ubuntu/boxes/zesty64/versions/20170412.1.0"
-  config.vm.provision :shell, path: "bootstrap.sh"
+  config.vm.provision :shell, path: "bootstrap.sh", args: "#{MISP_ENV}"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -42,7 +45,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  # config.vm.synced_folder "../", "/"
+  disabled = true
+  if MISP_ENV == "dev"
+      disabled = false
+  end
+  config.vm.synced_folder "..", "/var/www/MISP",
+                        owner: "www-data", group: "www-data", disabled: disabled
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -54,7 +62,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #
   #   # Use VBoxManage to customize the VM. For example to change memory:
     vb.customize ["modifyvm", :id, "--memory", "4096"]
-    vb.customize ["modifyvm", :id, "--name", "MISP - Ubuntu 17.04"]
+    vb.customize ["modifyvm", :id, "--name", "MISP - Ubuntu 17.04 - DEV"]
   end
   #
   # View the documentation for the provider you're using for more
