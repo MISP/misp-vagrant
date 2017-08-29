@@ -14,7 +14,7 @@ DBPASSWORD_MISP="$(openssl rand -hex 32)"
 
 # Webserver configuration
 PATH_TO_MISP='/var/www/MISP'
-MISP_BASEURL='http://127.0.0.1'
+MISP_BASEURL='http://127.0.0.1:5000'
 MISP_LIVE='1'
 FQDN='localhost'
 
