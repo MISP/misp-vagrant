@@ -39,7 +39,7 @@ If you do not want a development environment with synced folders:
 
     $ git clone https://github.com/MISP/misp-vagrant.git
     $ cd misp-vagrant/
-    $ MISP_ENV='demo'
+    $ export MISP_ENV='demo'
     $ vagrant up
 
 Modules activated by default in the VM:

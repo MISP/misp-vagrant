@@ -46,8 +46,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   disabled = true
-  if MISP_ENV == "dev"
+  vm_name = "MISP - Ubuntu 17.04"
+  if "#{MISP_ENV}" == "dev"
       disabled = false
+      vm_name.concat(" - DEV")
+
   end
   config.vm.synced_folder "..", "/var/www/MISP",
                         owner: "www-data", group: "www-data", disabled: disabled
@@ -61,8 +64,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #   vb.gui = true
   #
   #   # Use VBoxManage to customize the VM. For example to change memory:
-    vb.customize ["modifyvm", :id, "--memory", "4096"]
-    vb.customize ["modifyvm", :id, "--name", "MISP - Ubuntu 17.04 - DEV"]
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
+    vb.customize ["modifyvm", :id, "--name", vm_name]
   end
   #
   # View the documentation for the provider you're using for more
