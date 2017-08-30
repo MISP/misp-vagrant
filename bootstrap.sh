@@ -110,8 +110,7 @@ if [ "$MISP_ENV" != "dev" ]; then
 fi
 sudo chown www-data:www-data $PATH_TO_MISP
 cd $PATH_TO_MISP
-sudo -u www-data git clone https://github.com/MISP/MISP.git $PATH_TO_MISP
-#git checkout tags/$(git describe --tags `git rev-list --tags --max-count=1`)
+#sudo -u www-data git checkout tags/$(git describe --tags `git rev-list --tags --max-count=1`)
 sudo -u www-data git config core.filemode false
 # chown -R www-data $PATH_TO_MISP
 # chgrp -R www-data $PATH_TO_MISP
