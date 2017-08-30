@@ -50,7 +50,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   if "#{MISP_ENV}" == "dev"
       disabled = false
       vm_name.concat(" - DEV")
-
   end
   config.vm.synced_folder "..", "/var/www/MISP",
                         owner: "www-data", group: "www-data", disabled: disabled
