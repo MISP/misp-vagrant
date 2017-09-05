@@ -104,14 +104,16 @@ sudo systemctl restart apache2 > /dev/null 2>&1
 
 echo "--- Retrieving MISP ---"
 if [ "$MISP_ENV" != "dev" ]; then
-    mkdir $PATH_TO_MISP
+    sudo mkdir $PATH_TO_MISP
     sudo chown www-data:www-data $PATH_TO_MISP
-    sudo -u www-data git clone https://github.com/MISP/MISP.git $PATH_TO_MISP
+    cd $PATH_TO_MISP
+    sudo -u www-data -H git clone https://github.com/MISP/MISP.git $PATH_TO_MISP
+else
+    sudo chown www-data:www-data $PATH_TO_MISP
+    cd $PATH_TO_MISP
 fi
-sudo chown www-data:www-data $PATH_TO_MISP
-cd $PATH_TO_MISP
-#sudo -u www-data git checkout tags/$(git describe --tags `git rev-list --tags --max-count=1`)
-sudo -u www-data git config core.filemode false
+#sudo -u www-data -H git checkout tags/$(git describe --tags `git rev-list --tags --max-count=1`)
+sudo -u www-data -H git config core.filemode false
 # chown -R www-data $PATH_TO_MISP
 # chgrp -R www-data $PATH_TO_MISP
 # chmod -R 700 $PATH_TO_MISP
@@ -120,36 +122,36 @@ sudo -u www-data git config core.filemode false
 echo "--- Installing Mitre's STIX ---"
 sudo apt-get install -y python-dev python-pip libxml2-dev libxslt1-dev zlib1g-dev python-setuptools > /dev/null 2>&1
 cd $PATH_TO_MISP/app/files/scripts
-sudo -u www-data git clone https://github.com/CybOXProject/python-cybox.git
-sudo -u www-data git clone https://github.com/STIXProject/python-stix.git
+sudo -u www-data -H git clone https://github.com/CybOXProject/python-cybox.git
+sudo -u www-data -H git clone https://github.com/STIXProject/python-stix.git
 cd $PATH_TO_MISP/app/files/scripts/python-cybox
-sudo -u www-data git checkout v2.1.0.12
+sudo -u www-data -H git checkout v2.1.0.12
 sudo python setup.py install > /dev/null 2>&1
 cd $PATH_TO_MISP/app/files/scripts/python-stix
-sudo -u www-data git checkout v1.1.1.4
+sudo -u www-data -H git checkout v1.1.1.4
 sudo python setup.py install > /dev/null 2>&1
 # install mixbox to accomodate the new STIX dependencies:
 cd $PATH_TO_MISP/app/files/scripts/
-sudo -u www-data git clone https://github.com/CybOXProject/mixbox.git
+sudo -u www-data -H git clone https://github.com/CybOXProject/mixbox.git
 cd $PATH_TO_MISP/app/files/scripts/mixbox
-sudo -u www-data git checkout v1.0.2
+sudo -u www-data -H git checkout v1.0.2
 sudo python setup.py install > /dev/null 2>&1
 
 
 echo "--- Retrieving CakePHP... ---"
 # CakePHP is included as a submodule of MISP, execute the following commands to let git fetch it:
 cd $PATH_TO_MISP
-sudo -u www-data git submodule init
-sudo -u www-data git submodule update
+sudo -u www-data -H git submodule init
+sudo -u www-data -H git submodule update
 # Once done, install CakeResque along with its dependencies if you intend to use the built in background jobs:
 cd $PATH_TO_MISP/app
-sudo -u www-data php composer.phar require kamisama/cake-resque:4.1.2
-sudo -u www-data php composer.phar config vendor-dir Vendor
-sudo -u www-data php composer.phar install
+sudo -u www-data -H php composer.phar require kamisama/cake-resque:4.1.2
+sudo -u www-data -H php composer.phar config vendor-dir Vendor
+sudo -u www-data -H php composer.phar install
 # Enable CakeResque with php-redis
 sudo phpenmod redis
 # To use the scheduler worker for scheduled tasks, do the following:
-sudo -u www-data cp -fa $PATH_TO_MISP/INSTALL/setup/config.php $PATH_TO_MISP/app/Plugin/CakeResque/Config/config.php
+sudo -u www-data -H cp -fa $PATH_TO_MISP/INSTALL/setup/config.php $PATH_TO_MISP/app/Plugin/CakeResque/Config/config.php
 
 
 echo "--- Setting the permissions... ---"
@@ -166,7 +168,7 @@ sudo mysql -u $DBUSER_ADMIN -p$DBPASSWORD_ADMIN -e "grant usage on *.* to $DBNAM
 sudo mysql -u $DBUSER_ADMIN -p$DBPASSWORD_ADMIN -e "grant all privileges on $DBNAME.* to '$DBUSER_MISP'@'localhost';"
 sudo mysql -u $DBUSER_ADMIN -p$DBPASSWORD_ADMIN -e "flush privileges;"
 # Import the empty MISP database from MYSQL.sql
-sudo -u www-data mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP $DBNAME < /var/www/MISP/INSTALL/MYSQL.sql
+sudo -u www-data -H mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP $DBNAME < /var/www/MISP/INSTALL/MYSQL.sql
 
 
 echo "--- Configuring Apache... ---"
@@ -244,11 +246,11 @@ sudo cp $PATH_TO_MISP/INSTALL/misp.logrotate /etc/logrotate.d/misp
 
 echo "--- MISP configuration ---"
 # There are 4 sample configuration files in /var/www/MISP/app/Config that need to be copied
-sudo -u www-data cp -a $PATH_TO_MISP/app/Config/bootstrap.default.php /var/www/MISP/app/Config/bootstrap.php
-sudo -u www-data cp -a $PATH_TO_MISP/app/Config/database.default.php /var/www/MISP/app/Config/database.php
-sudo -u www-data cp -a $PATH_TO_MISP/app/Config/core.default.php /var/www/MISP/app/Config/core.php
-sudo -u www-data cp -a $PATH_TO_MISP/app/Config/config.default.php /var/www/MISP/app/Config/config.php
-sudo -u www-data cat > $PATH_TO_MISP/app/Config/database.php <<EOF
+sudo -u www-data -H cp -a $PATH_TO_MISP/app/Config/bootstrap.default.php /var/www/MISP/app/Config/bootstrap.php
+sudo -u www-data -H cp -a $PATH_TO_MISP/app/Config/database.default.php /var/www/MISP/app/Config/database.php
+sudo -u www-data -H cp -a $PATH_TO_MISP/app/Config/core.default.php /var/www/MISP/app/Config/core.php
+sudo -u www-data -H cp -a $PATH_TO_MISP/app/Config/config.default.php /var/www/MISP/app/Config/config.php
+sudo -u www-data -H cat > $PATH_TO_MISP/app/Config/database.php <<EOF
 <?php
 class DATABASE_CONFIG {
         public \$default = array(
@@ -276,7 +278,7 @@ sudo $PATH_TO_MISP/app/Console/cake Live $MISP_LIVE
 
 echo "--- Generating a GPG encryption key... ---"
 sudo apt-get install -y rng-tools haveged
-sudo -u www-data mkdir $PATH_TO_MISP/.gnupg
+sudo -u www-data -H mkdir $PATH_TO_MISP/.gnupg
 sudo chmod 700 $PATH_TO_MISP/.gnupg
 cat >gen-key-script <<EOF
     %echo Generating a default key
@@ -292,10 +294,10 @@ cat >gen-key-script <<EOF
     %commit
     %echo done
 EOF
-sudo -u www-data gpg --homedir $PATH_TO_MISP/.gnupg --batch --gen-key gen-key-script
+sudo -u www-data -H gpg --homedir $PATH_TO_MISP/.gnupg --batch --gen-key gen-key-script
 rm gen-key-script
 # And export the public key to the webroot
-sudo -u www-data gpg --homedir $PATH_TO_MISP/.gnupg --batch --gen-key gen-key-scriptgpg --homedir $PATH_TO_MISP/.gnupg --export --armor $EMAIL_ADDRESS > $PATH_TO_MISP/app/webroot/gpg.asc
+sudo -u www-data -H gpg --homedir $PATH_TO_MISP/.gnupg --batch --gen-key gen-key-scriptgpg --homedir $PATH_TO_MISP/.gnupg --export --armor $EMAIL_ADDRESS > $PATH_TO_MISP/app/webroot/gpg.asc
 
 
 echo "--- Making the background workers start on boot... ---"
@@ -323,7 +325,7 @@ then
     echo 'exit 0' | sudo tee -a /etc/rc.local
     sudo chmod u+x /etc/rc.local
 fi
-sudo sed -i -e '$i \sudo -u www-data bash /var/www/MISP/app/Console/worker/start.sh\n' /etc/rc.local
+sudo sed -i -e '$i \sudo -u www-data -H bash /var/www/MISP/app/Console/worker/start.sh\n' /etc/rc.local
 
 
 echo "--- Installing MISP modules... ---"
@@ -350,7 +352,7 @@ sudo pip3 install -I . > /dev/null 2>&1
 # sudo systemctl restart misp-modules.service > /dev/null
 
 # With initd:
-sudo sed -i -e '$i \sudo -u www-data misp-modules -l 0.0.0.0 -s &\n' /etc/rc.local
+sudo sed -i -e '$i \sudo -u www-data -H misp-modules -l 0.0.0.0 -s &\n' /etc/rc.local
 
 
 
