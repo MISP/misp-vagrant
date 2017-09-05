@@ -37,7 +37,8 @@ You can now edit the source code with your favorite editor and test it in your
 browser. The only thing is to not forget to restart Apache in the VM after a
 modification.
 
-If you do not want a development environment (and enable synced folders):
+If you do not want a development environment (and consequently disable synced
+folders):
 
 .. code-block:: bash
 
