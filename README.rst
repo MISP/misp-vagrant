@@ -17,6 +17,11 @@ Installation of VirtualBox and Vagrant
     $ sudo apt-get install virtualbox vagrant
 
 
+Requirements
+------------
+
+- Be sure to use a recent version of vagrant >= 1.9.1.
+
 Deployment of MISP
 ------------------
 
