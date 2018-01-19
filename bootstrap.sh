@@ -354,7 +354,11 @@ sudo pip3 install -I . > /dev/null 2>&1
 # With initd:
 sudo sed -i -e '$i \sudo -u www-data -H misp-modules -l 0.0.0.0 -s &\n' /etc/rc.local
 
-
+# Set sane PHP defaults
+sudo sed -i 's/memory_limit = .*/memory_limit = '512M'/' /etc/php/7.0/apache2/php.ini
+sudo sed -i 's/max_execution_time = .*/max_execution_time = '300'/' /etc/php/7.0/apache2/php.ini
+sudo sed -i 's/upload_max_filesize = .*/upload_max_filesize = '50M'/' /etc/php/7.0/apache2/php.ini
+sudo sed -i 's/post_max_size = .*/post_max_size = '50M'/' /etc/php/7.0/apache2/php.ini
 
 echo "--- Restarting Apache... ---"
 sudo systemctl restart apache2 > /dev/null 2>&1
