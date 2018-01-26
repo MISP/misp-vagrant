@@ -25,7 +25,7 @@ Requirements
 Deployment of MISP
 ------------------
 
-MISP will be automatically deployed in an Ubuntu Zesty Server.
+MISP will be automatically deployed in an Ubuntu Artful Server.
 
 .. code-block:: bash
 

@@ -12,9 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  #config.vm.box = "bento/ubuntu-16.04"
-  config.vm.box = "ubuntu/zesty64"
-  #config.vm.box_url = "https://atlas.hashicorp.com/ubuntu/boxes/zesty64/versions/20170412.1.0"
+  config.vm.box = "ubuntu/artful64"
   config.vm.provision :shell, path: "bootstrap.sh", args: "#{MISP_ENV}"
 
   # Disable automatic box update checking. If you disable this, then
@@ -46,7 +44,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   disabled = true
-  vm_name = "MISP - Ubuntu 17.04"
+  vm_name = "MISP - Ubuntu 17.10"
   if "#{MISP_ENV}" == "dev"
       disabled = false
       vm_name.concat(" - DEV")
