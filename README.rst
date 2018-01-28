@@ -9,7 +9,7 @@ host machine while the softwares (Apache, PHP, MariaDB, etc.) and libraries
 will be installed on the guest Vagrant machine.
 
 For a deployment of MISP more ready for a production environment you can use
-[our packer script](https://github.com/MISP/misp-packer).
+`our packer script <https://github.com/MISP/misp-packer>`_.
 
 
 Installation of VirtualBox and Vagrant
