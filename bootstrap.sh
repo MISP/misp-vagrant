@@ -345,22 +345,27 @@ pip3 install -I . > /dev/null
 sed -i -e '$i \sudo -u www-data -H misp-modules -l 0.0.0.0 -s &\n' /etc/rc.local
 
 
-echo "--- Restarting Apache... ---"
+echo "--- Restarting Apache… ---"
 systemctl restart apache2 > /dev/null
 sleep 5
 
 
-echo "--- Updating the galaxies... ---"
 sudo -E $PATH_TO_MISP/app/Console/cake userInit -q > /dev/null
 AUTH_KEY=$(mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP misp -e "SELECT authkey FROM users;" | tail -1)
-curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/json" -v http://127.0.0.1/galaxies/update > /dev/null
+echo "--- Updating the galaxies… ---"
+curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X http://127.0.0.1/galaxies/update
+
+echo "--- Updating the taxonomies… ---"
+curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X http://127.0.0.1/taxonomies/update
+
+echo "--- Updating the warning lists… ---"
+curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X http://127.0.0.1/warninglists/update
+
+echo "--- Updating the object templates… ---"
+curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X http://127.0.0.1/objectTemplates/update
 
 
-echo "--- Updating the taxonomies... ---"
-curl -k -X POST -H "Authorization: $AUTH_KEY" -H "Accept: application/json" -v http://127.0.0.1/taxonomies/update > /dev/null
-
-
-# echo "--- Enabling MISP new pub/sub feature (ZeroMQ)... ---"
+# echo "--- Enabling MISP new pub/sub feature (ZeroMQ)… ---"
 # # ZeroMQ depends on the Python client for Redis
 # pip install redis > /dev/null
 # ## Install ZeroMQ and prerequisites
