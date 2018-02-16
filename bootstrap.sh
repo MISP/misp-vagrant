@@ -353,16 +353,16 @@ sleep 5
 sudo -E $PATH_TO_MISP/app/Console/cake userInit -q > /dev/null
 AUTH_KEY=$(mysql -u $DBUSER_MISP -p$DBPASSWORD_MISP misp -e "SELECT authkey FROM users;" | tail -1)
 echo "--- Updating the galaxies… ---"
-curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X http://127.0.0.1/galaxies/update
+curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X POST http://127.0.0.1/galaxies/update
 
 echo "--- Updating the taxonomies… ---"
-curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X http://127.0.0.1/taxonomies/update
+curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X POST http://127.0.0.1/taxonomies/update
 
 echo "--- Updating the warning lists… ---"
-curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X http://127.0.0.1/warninglists/update
+curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X POST http://127.0.0.1/warninglists/update
 
 echo "--- Updating the object templates… ---"
-curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X http://127.0.0.1/objectTemplates/update
+curl --header "Authorization: $AUTH_KEY" --header "Accept: application/json" --header "Content-Type: application/json" -o /dev/null -s -X  POST http://127.0.0.1/objectTemplates/update
 
 
 # echo "--- Enabling MISP new pub/sub feature (ZeroMQ)… ---"
