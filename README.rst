@@ -36,6 +36,7 @@ MISP will be automatically deployed in an Ubuntu Artful Server.
     $ cd MISP/
     $ git submodule update --init misp-vagrant
     $ cd misp-vagrant/
+    $ git pull origin master
     $ vagrant up
 
 Once the VM will be configured by Vagrant, go to the address
