@@ -59,7 +59,7 @@ apt-get update
 
 
 echo "--- Install base packages… ---"
-apt-get -y install curl net-tools gcc git gnupg-agent make python openssl redis-server sudo vim zip > /dev/null
+apt-get -y install curl net-tools ifupdown gcc git gnupg-agent make python openssl redis-server sudo vim zip > /dev/null
 
 
 echo "--- Installing and configuring Postfix… ---"
