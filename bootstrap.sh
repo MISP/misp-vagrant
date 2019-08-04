@@ -42,8 +42,7 @@ post_max_size=50M
 max_execution_time=300
 max_input_time=223
 memory_limit=512M
-PHP_INI=/etc/php/7.1/apache2/php.ini
-
+PHP_INI=/etc/php/7.2/apache2/php.ini
 
 export DEBIAN_FRONTEND=noninteractive
 export LANGUAGE=en_US.UTF-8
@@ -112,7 +111,8 @@ a2ensite default-ssl > /dev/null
 
 
 echo "--- Installing PHP-specific packages… ---"
-apt-get install -y libapache2-mod-php php php-cli php-crypt-gpg php-dev php-json php-mysql php-opcache php-readline php-redis php-xml > /dev/null
+apt-get install -y libapache2-mod-php php php-cli php-gnupg php-dev php-json php-mysql php-opcache php-readline php-redis php-xml php-mbstring php-gd > /dev/null
+
 
 
 echo -e "\n--- Configuring PHP (sane PHP defaults)… ---\n"
